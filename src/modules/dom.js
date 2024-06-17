@@ -1,9 +1,217 @@
-
 import '../style/dom.css'
+import mediator from './mediator';
 
+function loadDom() {
+    const addProjectBtn = document.getElementById('add-project-btn');
+    const dialog = document.getElementById('dialog');
+    const closeDialog = document.getElementById('close-dialog');
+    const cancelProject = document.getElementById('cancel-project');
+    const addProject = document.getElementById('add-project');
+    const projectNameInput = document.getElementById('project-name');
+    const projectsSection = document.getElementById('projects-list');
+    const sectionTitle = document.getElementById('section-title');
+    const addTaskBtn = document.getElementById('add-task-btn');
+    const taskDialog = document.getElementById('task-dialog');
+    const closeTaskDialog = document.getElementById('close-task-dialog');
+    const cancelTask = document.getElementById('cancel-task');
+    const addTask = document.getElementById('add-task');
+    const taskTitleInput = document.getElementById('task-title');
+    const taskDescInput = document.getElementById('task-desc');
+    const taskDueDateInput = document.getElementById('task-due-date');
+    const taskPriorityInput = document.getElementById('task-priority');
+    const tasksList = document.getElementById('tasks-list');
+    const editTaskDialog = document.getElementById('edit-task-dialog');
+    const closeEditTaskDialog = document.getElementById('close-edit-task-dialog');
+    const cancelEditTask = document.getElementById('cancel-edit-task');
+    const saveTask = document.getElementById('save-task');
+    const editTaskTitleInput = document.getElementById('edit-task-title');
+    const editTaskDescInput = document.getElementById('edit-task-desc');
+    const editTaskDueDateInput = document.getElementById('edit-task-due-date');
+    const editTaskPriorityInput = document.getElementById('edit-task-priority');
+    let currentSection = 'All my tasks';
+    let currentEditingTask = null;
 
-export default function loadDom(){
+    // Initialize navigation
+    function initNavigation() {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (event) => {
+                currentSection = event.target.dataset.section;
+                sectionTitle.textContent = currentSection;
+                displayTodos(currentSection);
+            });
+        });
+    }
 
+    // Show the dialog when the "Add Project" button is clicked
+    addProjectBtn.addEventListener('click', () => {
+        dialog.style.display = 'flex';
+    });
 
+    // Close the dialog
+    closeDialog.addEventListener('click', () => {
+        dialog.style.display = 'none';
+        projectNameInput.value = '';
+    });
 
+    cancelProject.addEventListener('click', () => {
+        dialog.style.display = 'none';
+        projectNameInput.value = '';
+    });
+
+    // Add the project
+    addProject.addEventListener('click', () => {
+        const projectName = projectNameInput.value.trim();
+        if (projectName !== '') {
+            mediator.createProject(projectName);
+            const projectItem = document.createElement('li');
+            projectItem.textContent = projectName;
+            projectItem.classList.add('nav-item');
+            projectItem.dataset.section = projectName;
+            projectsSection.appendChild(projectItem);
+
+            dialog.style.display = 'none';
+            projectNameInput.value = '';
+            initNavigation();
+        }
+    });
+
+    // Show the task dialog when the "Add Task" button is clicked
+    addTaskBtn.addEventListener('click', () => {
+        taskDialog.style.display = 'flex';
+    });
+
+    // Close the task dialog
+    closeTaskDialog.addEventListener('click', () => {
+        taskDialog.style.display = 'none';
+        clearTaskInputs();
+    });
+
+    cancelTask.addEventListener('click', () => {
+        taskDialog.style.display = 'none';
+        clearTaskInputs();
+    });
+
+    // Add the task
+    addTask.addEventListener('click', () => {
+        const taskTitle = taskTitleInput.value.trim();
+        const taskDesc = taskDescInput.value.trim();
+        const taskDueDate = taskDueDateInput.value;
+        const taskPriority = taskPriorityInput.value;
+        
+        if (taskTitle !== '') {
+            mediator.createTodo(currentSection, taskTitle, taskDesc, taskDueDate, taskPriority);
+            displayTodos(currentSection);
+            taskDialog.style.display = 'none';
+            clearTaskInputs();
+        }
+    });
+
+    // Show the edit task dialog
+    function showEditTaskDialog(task) {
+        currentEditingTask = task;
+        editTaskTitleInput.value = task.title;
+        editTaskDescInput.value = task.description;
+        editTaskDueDateInput.value = task.dueDate;
+        editTaskPriorityInput.value = task.priority;
+        editTaskDialog.style.display = 'flex';
+    }
+
+    // Close the edit task dialog
+    closeEditTaskDialog.addEventListener('click', () => {
+        editTaskDialog.style.display = 'none';
+        currentEditingTask = null;
+        clearEditTaskInputs();
+    });
+
+    cancelEditTask.addEventListener('click', () => {
+        editTaskDialog.style.display = 'none';
+        currentEditingTask = null;
+        clearEditTaskInputs();
+    });
+
+    // Save the edited task
+    saveTask.addEventListener('click', () => {
+        const newTitle = editTaskTitleInput.value.trim();
+        const newDesc = editTaskDescInput.value.trim();
+        const newDueDate = editTaskDueDateInput.value;
+        const newPriority = editTaskPriorityInput.value;
+
+        if (currentEditingTask && newTitle !== '') {
+            currentEditingTask.title = newTitle;
+            currentEditingTask.description = newDesc;
+            currentEditingTask.dueDate = newDueDate;
+            currentEditingTask.priority = newPriority;
+            displayTodos(currentSection);
+            editTaskDialog.style.display = 'none';
+            currentEditingTask = null;
+            clearEditTaskInputs();
+        }
+    });
+
+    // Display todos in the current section
+    function displayTodos(section) {
+        tasksList.innerHTML = '';
+        const todos = mediator.getTodos(section);
+        todos.forEach(todo => {
+            const todoItem = document.createElement('li');
+
+            const todoCheckbox = document.createElement('input');
+            todoCheckbox.type = 'checkbox';
+            todoCheckbox.checked = todo.done;
+            todoCheckbox.addEventListener('change', () => {
+                todo.done = todoCheckbox.checked;
+            });
+
+            const todoTitle = document.createElement('span');
+            todoTitle.textContent = todo.title;
+            todoTitle.classList.add('task-title');
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => {
+                mediator.deleteTodo(section, todo.title);
+                displayTodos(section);
+            });
+
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.addEventListener('click', () => {
+                showEditTaskDialog(todo);
+            });
+
+            const taskActions = document.createElement('div');
+            taskActions.classList.add('task-actions');
+            taskActions.appendChild(editButton);
+            taskActions.appendChild(deleteButton);
+
+            todoItem.appendChild(todoCheckbox);
+            todoItem.appendChild(todoTitle);
+            todoItem.appendChild(taskActions);
+
+            tasksList.appendChild(todoItem);
+        });
+    }
+
+    // Clear task input fields
+    function clearTaskInputs() {
+        taskTitleInput.value = '';
+        taskDescInput.value = '';
+        taskDueDateInput.value = '';
+        taskPriorityInput.value = 'low';
+    }
+
+    // Clear edit task input fields
+    function clearEditTaskInputs() {
+        editTaskTitleInput.value = '';
+        editTaskDescInput.value = '';
+        editTaskDueDateInput.value = '';
+        editTaskPriorityInput.value = 'low';
+    }
+
+    // Initial setup
+    sectionTitle.textContent = currentSection;
+    displayTodos(currentSection);
+    initNavigation();
 }
+
+export default loadDom;
