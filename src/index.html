@@ -6,15 +6,25 @@
     <title>Document</title>
 </head>
 <body>
+    
     <div id="container">
         <div id="side-bar">
             <div class="side-bar-container">
                 <div id="home-section">
                     <h1>Home</h1>
-                    <ul>
-                        <li class="nav-item" data-section="All my tasks">All my tasks</li>
-                        <li class="nav-item" data-section="Today">Today</li>
-                        <li class="nav-item" data-section="Todo later">Todo later</li>
+                    <ul id="home-elem">
+                        <div id="box1"  class="nav-box">
+                            
+                            <li class="nav-item" data-section="All my tasks">All my tasks</li>
+                        </div>
+                        <div id="box2" class="nav-box">
+
+                            <li class="nav-item" data-section="Today">Today</li>
+                        </div>
+                        <div id="box3" class="nav-box">
+
+                            <li class="nav-item" data-section="Todo later">Todo later</li>
+                        </div>
                     </ul>
                 </div>
                 <div id="projects-section">
@@ -64,6 +74,27 @@
                 <button id="cancel-project">Cancel</button>
             </div>
         </div>
+    </div>
+
+    <!-- Dialog for editing tasks -->
+    <div id="edit-task-dialog" class="dialog">
+        <div class="dialog-content">
+            <span id="close-edit-task-dialog" class="close-button">&times;</span>
+            <h2>New Task</h2>
+            <input type="text" id="edit-task-title" placeholder="Task Title">
+            <textarea id="edit-task-desc" placeholder="Task Description"></textarea>
+            <input type="date" id="edit-task-due-date">
+            <select id="edit-task-priority">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+            <div class="dialog-buttons">
+                <button id="save-task">Save</button>
+                <button id="cancel-edit-task">Cancel</button>
+            </div>
+        </div>
+
     </div>
     
 </body>
