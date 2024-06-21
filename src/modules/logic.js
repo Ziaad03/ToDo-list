@@ -43,7 +43,7 @@ class Todo {
   class App {
     constructor() {
       this.projects = [];
-      this.projects.push(new Project('Default'));
+     
     }
   
     addProject(name) {

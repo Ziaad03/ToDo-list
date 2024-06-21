@@ -35,6 +35,7 @@ function loadDom() {
     let currentSection = 'All my tasks';
     let currentEditingTask = null;
 
+    
 
     const tasksImg = new Image()
     tasksImg.src = tasksImj
@@ -100,10 +101,13 @@ function loadDom() {
             projectItem.classList.add('nav-item');
             projectItem.dataset.section = projectName;
             projectsSection.appendChild(projectItem);
+            
+            saveProjectsTolocalStorage();
 
             dialog.style.display = 'none';
             projectNameInput.value = '';
             initNavigation();
+            
         }
     });
 
@@ -134,10 +138,14 @@ function loadDom() {
             
             
             mediator.createTodo(currentSection, taskTitle, taskDesc, taskDueDate, taskPriority);
+            saveToDoToLocalStorage(currentSection);
+
             if (currentSection !== 'All my tasks'){
                 mediator.createTodo("All my tasks", taskTitle, taskDesc, taskDueDate, taskPriority);
+                saveToDoToLocalStorage("All my tasks");
 
             }
+
             displayTodos(currentSection);
             taskDialog.style.display = 'none';
             clearTaskInputs();
@@ -191,6 +199,7 @@ function loadDom() {
                 currentEditingTask.dueDate = newDueDate;
                 currentEditingTask.priority = newPriority;
                 displayTodos(currentSection);
+                saveToDoToLocalStorage(currentSection)
                 editTaskDialog.style.display = 'none';
                 currentEditingTask = null;
                 clearEditTaskInputs();
@@ -214,6 +223,8 @@ function loadDom() {
             todoCheckbox.checked = todo.done;
             todoCheckbox.addEventListener('change', () => {
                 todo.done = todoCheckbox.checked;
+                
+                
             });
 
             const todoTitle = document.createElement('span');
@@ -224,6 +235,7 @@ function loadDom() {
             deleteButton.textContent = 'Delete';
             deleteButton.addEventListener('click', () => {
                 mediator.deleteTodo(section, todo.title);
+                saveToDoToLocalStorage(section)
                 displayTodos(section);
             });
 
@@ -232,6 +244,7 @@ function loadDom() {
             editButton.addEventListener('click', () => {
                 showEditTaskDialog(todo);
             });
+
 
             const taskActions = document.createElement('div');
             taskActions.classList.add('task-actions');
@@ -265,10 +278,62 @@ function loadDom() {
         editTaskPriorityInput.value = 'low';
     }
 
+    
+    function saveProjectsTolocalStorage(){
+        // save the project and the todos to local storage
+        const projects = mediator.getProjects();
+        
+
+        localStorage.setItem('projects', JSON.stringify(projects));
+        
+    
+    }
+
+    function saveToDoToLocalStorage(projectName){
+        const todos = mediator.getTodos(projectName);
+        localStorage.setItem(projectName, JSON.stringify(todos));
+    }
+
+    function retriveFromLocalStorage(){
+        const projects = JSON.parse(localStorage.getItem('projects'));
+        const todos = JSON.parse(localStorage.getItem('todos'));
+        console.log(projects)
+
+        
+
+        if (projects) {
+            projects.forEach(project => {
+                
+                if (project.name !== "All my tasks" && project.name !== "Today" && project.name !== "Todo later" ){
+                    mediator.createProject(project.name);
+                    const projectItem = document.createElement('li');
+                    projectItem.textContent = project.name;
+                    projectItem.classList.add('nav-item');
+                    projectItem.dataset.section = project.name;
+                    projectsSection.appendChild(projectItem);
+
+
+                }
+
+                const todos = JSON.parse(localStorage.getItem(project.name));
+                console.log(project.name)
+                if (todos) {
+                    todos.forEach(todo => {
+                        mediator.createTodo(project.name, todo.title, todo.description, todo.dueDate, todo.priority);
+                    });
+                }
+            });
+        }
+
+       
+
+        }
     // Initial setup
+    retriveFromLocalStorage();
     sectionTitle.textContent = currentSection;
     displayTodos(currentSection);
     initNavigation();
+    
 }
 
 export default loadDom;
