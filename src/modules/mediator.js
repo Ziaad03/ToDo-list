@@ -1,6 +1,6 @@
 // src/modules/mediator.js
 
-import { Todo, App } from './logic';
+import { Todo, App } from "./logic";
 
 const mediator = (() => {
   const app = new App();
